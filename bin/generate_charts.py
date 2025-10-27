@@ -212,7 +212,10 @@ def generate_charts(files):
         rp_version = data['version'] if 'version' in data.keys() and data['version'] else "unknown_version"
         unique_name = "{ver}-{ts}-{driver}-{workload}".format(ver=rp_version, ts=begin_time, driver=data['driver'], workload=data['workload'])
         # name used as chart label.
-        name = "{ver}-{driver}-{workload}".format(ver=rp_version, driver=data['driver'], workload=data['workload'])
+        #name = "{ver}-{driver}-{workload}".format(ver=rp_version, driver=data['driver'], workload=data['workload'])
+        # Build label from non-empty parts only
+        label_parts = [rp_version, data['driver'], data['workload']]
+        name = "-".join(part for part in label_parts if part)
         if unique_name in benchmark_names:
             print(f"WARN: Duplicate benchmark found: {name} in file {file}", file=sys.stderr)
 

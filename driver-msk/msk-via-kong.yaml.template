@@ -1,0 +1,39 @@
+# Template for MSK via Kong Event Gateway configuration
+# Copy this file to msk-via-kong.yaml and fill in your actual values
+
+name: msk-via-kong
+driverClass: io.openmessaging.benchmark.driver.kafka.KafkaBenchmarkDriver
+
+replicationFactor: 3
+reset: true
+
+topicConfig: |
+  min.insync.replicas=2
+  retention.ms=1800000
+  retention.bytes=104857600
+  segment.ms=300000
+  delete.retention.ms=60000
+
+commonConfig: |
+  bootstrap.servers=<REPLACE_WITH_KONG_GATEWAY_ENDPOINT>
+  security.protocol=SASL_PLAINTEXT
+  sasl.mechanism=SCRAM-SHA-512
+  sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="<REPLACE_WITH_USERNAME>" password="<REPLACE_WITH_PASSWORD>";
+  request.timeout.ms=30000
+  connections.max.idle.ms=540000
+
+producerConfig: |
+  acks=all
+  retries=2147483647
+  max.in.flight.requests.per.connection=5
+  enable.idempotence=true
+  linger.ms=1
+  batch.size=16384
+  compression.type=lz4
+
+consumerConfig: |
+  auto.offset.reset=earliest
+  enable.auto.commit=true
+  session.timeout.ms=30000
+  heartbeat.interval.ms=3000
+

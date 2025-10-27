@@ -33,3 +33,13 @@ driver-redpanda/deploy/certification/log
 driver-redpanda/deploy/certification/results
 driver-redpanda/deploy/certification/compare-22.1.5-22.2.1/results
 driver-redpanda-deploy/terraform.tfvars
+
+# MSK/Kafka benchmark results
+results-*/
+results-combined*/
+msk-test-*.json
+chart-*.json
+
+# Sensitive configuration files with credentials
+driver-msk/msk-config.yaml
+driver-msk/msk-via-kong.yaml
