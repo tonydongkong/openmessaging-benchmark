@@ -99,81 +99,88 @@ public class WorkerStats {
         }
     }
 
-    public void recordMessageSendError() {
+    public PeriodStats toPeriodStats() {
+        PeriodStats stats = new PeriodStats();
+
+        stats.messagesSent = messagesSent.sumThenReset();
+        stats.messageSendErrors = messageSendErrors.sumThenReset();
+        stats.bytesSent = bytesSent.sumThenReset();
+
+        stats.messagesReceived = messagesReceived.sumThenReset();
+        stats.bytesReceived = bytesReceived.sumThenReset();
+
+        stats.totalMessagesSent = totalMessagesSent.sum();
+        stats.totalMessageSendErrors = totalMessageSendErrors.sum();
+        stats.totalMessagesReceived = totalMessagesReceived.sum();
+
+        stats.publishLatency = publishLatencyRecorder.getIntervalHistogram();
+        stats.publishDelayLatency = publishDelayLatencyRecorder.getIntervalHistogram();
+        stats.endToEndLatency = endToEndLatencyRecorder.getIntervalHistogram();
+        return stats;
+    }
+
+    public CumulativeLatencies toCumulativeLatencies() {
+        CumulativeLatencies latencies = new CumulativeLatencies();
+        latencies.publishLatency = cumulativePublishLatencyRecorder.getIntervalHistogram();
+        latencies.publishDelayLatency = cumulativePublishDelayLatencyRecorder.getIntervalHistogram();
+        latencies.endToEndLatency = endToEndCumulativeLatencyRecorder.getIntervalHistogram();
+        return latencies;
+    }
+
+    public CountersStats toCountersStats() throws IOException {
+        CountersStats stats = new CountersStats();
+        stats.messagesSent = totalMessagesSent.sum();
+        stats.messageSendErrors = totalMessageSendErrors.sum();
+        stats.messagesReceived = totalMessagesReceived.sum();
+        return stats;
+    }
+
+    public void resetLatencies() {
+        publishLatencyRecorder.reset();
+        cumulativePublishLatencyRecorder.reset();
+        publishDelayLatencyRecorder.reset();
+        cumulativePublishDelayLatencyRecorder.reset();
+        endToEndLatencyRecorder.reset();
+        endToEndCumulativeLatencyRecorder.reset();
+    }
+
+    public void reset() {
+        resetLatencies();
+
+        messagesSent.reset();
+        messageSendErrors.reset();
+        bytesSent.reset();
+        messagesReceived.reset();
+        bytesReceived.reset();
+        totalMessagesSent.reset();
+        totalMessagesReceived.reset();
+    }
+
+    public void recordProducerFailure() {
         messageSendErrors.increment();
-        totalMessageSendErrors.increment();
         messageSendErrorCounter.inc();
+        totalMessageSendErrors.increment();
     }
 
     public void recordProducerSuccess(
-            long payloadLength, long intendedSendTime, long sendTime, long nowNs) {
+            long payloadLength, long intendedSendTimeNs, long sendTimeNs, long nowNs) {
         messagesSent.increment();
         totalMessagesSent.increment();
         messagesSentCounter.inc();
         bytesSent.add(payloadLength);
         bytesSentCounter.add(payloadLength);
 
-        long latencyMicros = TimeUnit.NANOSECONDS.toMicros(nowNs - sendTime);
+        final long latencyMicros =
+                Math.min(highestTrackableValue, TimeUnit.NANOSECONDS.toMicros(nowNs - sendTimeNs));
         publishLatencyRecorder.recordValue(latencyMicros);
         cumulativePublishLatencyRecorder.recordValue(latencyMicros);
         publishLatencyStats.registerSuccessfulEvent(latencyMicros, TimeUnit.MICROSECONDS);
 
-        final long sendDelayMicros = TimeUnit.NANOSECONDS.toMicros(sendTime - intendedSendTime);
+        final long sendDelayMicros =
+                Math.min(
+                        highestTrackableValue, TimeUnit.NANOSECONDS.toMicros(sendTimeNs - intendedSendTimeNs));
         publishDelayLatencyRecorder.recordValue(sendDelayMicros);
         cumulativePublishDelayLatencyRecorder.recordValue(sendDelayMicros);
         publishDelayLatencyStats.registerSuccessfulEvent(sendDelayMicros, TimeUnit.MICROSECONDS);
-    }
-
-    public void recordProducerFailure() {
-        recordMessageSendError();
-    }
-
-    public PeriodStats toPeriodStats() {
-        PeriodStats stats = new PeriodStats();
-
-        stats.messagesSent = messagesSent.sumThenReset();
-        stats.bytesSent = bytesSent.sumThenReset();
-        stats.errors = messageSendErrors.sumThenReset();
-
-        stats.messagesReceived = messagesReceived.sumThenReset();
-        stats.bytesReceived = bytesReceived.sumThenReset();
-
-        stats.totalMessagesSent = totalMessagesSent.sum();
-        stats.totalErrors = totalMessageSendErrors.sum();
-        stats.totalMessagesReceived = totalMessagesReceived.sum();
-
-        stats.publishLatency = publishLatencyRecorder.getIntervalHistogram();
-        stats.publishDelayLatency = publishDelayLatencyRecorder.getIntervalHistogram();
-        stats.endToEndLatency = endToEndLatencyRecorder.getIntervalHistogram();
-
-        return stats;
-    }
-
-    public CountersStats toCountersStats() throws IOException {
-        CountersStats stats = new CountersStats();
-        stats.messagesSent = totalMessagesSent.sum();
-        stats.messagesReceived = totalMessagesReceived.sum();
-        return stats;
-    }
-
-    public CumulativeLatencies toCumulativeLatencies() {
-        CumulativeLatencies agg = new CumulativeLatencies();
-        agg.publishLatency = cumulativePublishLatencyRecorder.getIntervalHistogram();
-        agg.publishDelayLatency = cumulativePublishDelayLatencyRecorder.getIntervalHistogram();
-        agg.endToEndLatency = endToEndCumulativeLatencyRecorder.getIntervalHistogram();
-        return agg;
-    }
-
-    public void resetStats() {
-        messagesSent.reset();
-        bytesSent.reset();
-        messageSendErrors.reset();
-
-        messagesReceived.reset();
-        bytesReceived.reset();
-
-        publishLatencyRecorder.reset();
-        publishDelayLatencyRecorder.reset();
-        endToEndLatencyRecorder.reset();
     }
 }
