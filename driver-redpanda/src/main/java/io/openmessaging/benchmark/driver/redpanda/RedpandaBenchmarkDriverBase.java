@@ -142,7 +142,6 @@ public abstract class RedpandaBenchmarkDriverBase implements BenchmarkDriver {
 
     }
 
-    @Override
     public CompletableFuture<Boolean> validateTopicExists(String topicName) {
         return toCompletableFuture(admin.listTopics(new ListTopicsOptions()).names())
                 .thenApply(names -> names.stream().anyMatch(topic -> topic.equals(topicName)));
