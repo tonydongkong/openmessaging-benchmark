@@ -1,0 +1,5 @@
+data:
+    fooz: baz
+headers: # comment added for si
+    header1: "value1"
+    header2: "value2"

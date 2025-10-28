@@ -1,0 +1,6 @@
+data:
+    fooz: something
+headers:
+    cool: "beans"
+    header2: "value2"
+    header3: "value3"
