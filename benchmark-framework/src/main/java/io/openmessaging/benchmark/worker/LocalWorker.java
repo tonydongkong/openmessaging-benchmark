@@ -98,7 +98,7 @@ public class LocalWorker implements Worker, ConsumerCallback {
     }
 
     @Override
-    public List<String> createTopics(TopicsInfo topicsInfo) {
+    public List<String> createOrValidateTopics(TopicsInfo topicsInfo) throws IOException {
         Timer timer = new Timer();
 
         List<TopicInfo> topicInfos =
@@ -307,7 +307,6 @@ public class LocalWorker implements Worker, ConsumerCallback {
         }
     }
 
-    @Override
     public String id() {
         return "local";
     }
