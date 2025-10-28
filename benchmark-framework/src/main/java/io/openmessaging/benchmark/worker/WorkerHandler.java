@@ -113,8 +113,10 @@ public class WorkerHandler {
     private void handleStartLoad(Context ctx) throws Exception {
         ProducerWorkAssignment producerWorkAssignment = mapper.readValue(ctx.body(), ProducerWorkAssignment.class);
 
-        log.info("Start load publish-rate: {} msg/s -- payload-size: {}", producerWorkAssignment.publishRate,
-                producerWorkAssignment.payloadData.get(0).length);
+        log.info(
+                "Start load publish-rate: {} msg/s -- payload-size: {}",
+                producerWorkAssignment.publishRate,
+                producerWorkAssignment.payloadData.get(0).data.length);
 
         localWorker.startLoad(producerWorkAssignment);
     }

@@ -18,9 +18,9 @@ import io.openmessaging.benchmark.utils.distributor.KeyDistributorType;
 import java.util.List;
 
 public class ProducerWorkAssignment {
-    
-    public List<byte[]> payloadData;
-    
+
+    public List<Payload> payloadData;
+
     public double publishRate;
 
     public KeyDistributorType keyDistributorType;

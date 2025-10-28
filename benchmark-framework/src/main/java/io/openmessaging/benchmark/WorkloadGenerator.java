@@ -32,16 +32,9 @@ import org.slf4j.LoggerFactory;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.openmessaging.benchmark.utils.PaddingDecimalFormat;
 import io.openmessaging.benchmark.utils.Timer;
-import io.openmessaging.benchmark.utils.payload.FilePayloadReader;
 import io.openmessaging.benchmark.utils.payload.PayloadReader;
 import io.openmessaging.benchmark.worker.Worker;
-import io.openmessaging.benchmark.worker.commands.ConsumerAssignment;
-import io.openmessaging.benchmark.worker.commands.CountersStats;
-import io.openmessaging.benchmark.worker.commands.CumulativeLatencies;
-import io.openmessaging.benchmark.worker.commands.PeriodStats;
-import io.openmessaging.benchmark.worker.commands.ProducerWorkAssignment;
-import io.openmessaging.benchmark.worker.commands.TopicSubscription;
-import io.openmessaging.benchmark.worker.commands.TopicsInfo;
+import io.openmessaging.benchmark.worker.commands.*;
 
 public class WorkloadGenerator implements AutoCloseable {
 
@@ -99,7 +92,6 @@ public class WorkloadGenerator implements AutoCloseable {
             });
         }
 
-        final PayloadReader payloadReader = new FilePayloadReader(workload.messageSize);
 
         ProducerWorkAssignment producerWorkAssignment = new ProducerWorkAssignment();
         producerWorkAssignment.keyDistributorType = workload.keyDistributor;
@@ -117,24 +109,11 @@ public class WorkloadGenerator implements AutoCloseable {
                 r.nextBytes(randArray);
                 byte[] zerodArray = new byte[zerodBytes];
                 byte[] combined = ArrayUtils.addAll(randArray, zerodArray);
-                producerWorkAssignment.payloadData.add(combined);
+                producerWorkAssignment.payloadData.add(new Payload(combined));
             }
-        }
-        else {
-            File payloadFile = new File(workload.payloadFile);
-            if (payloadFile.isDirectory()) {
-                File[] payloadFileList = payloadFile.listFiles();
-
-                if (payloadFileList.length == 0) {
-                    throw new IllegalArgumentException("Payload file must either point to a file or a directory with one or more payload files");
-                }
-
-                for (File payloadF : payloadFileList) {
-                    producerWorkAssignment.payloadData.add(payloadReader.load(payloadF.getAbsolutePath()));
-                }
-            } else {
-                producerWorkAssignment.payloadData.add(payloadReader.load(workload.payloadFile));
-            }
+        } else {
+            final PayloadReader payloadReader = new PayloadReader(workload.messageSize);
+            producerWorkAssignment.payloadData = payloadReader.load(workload.payloadFile);
         }
 
         worker.startLoad(producerWorkAssignment);
