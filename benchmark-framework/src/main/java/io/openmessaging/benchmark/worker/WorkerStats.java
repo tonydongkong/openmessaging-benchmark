@@ -103,14 +103,14 @@ public class WorkerStats {
         PeriodStats stats = new PeriodStats();
 
         stats.messagesSent = messagesSent.sumThenReset();
-        stats.messageSendErrors = messageSendErrors.sumThenReset();
+        stats.errors = messageSendErrors.sumThenReset();
         stats.bytesSent = bytesSent.sumThenReset();
 
         stats.messagesReceived = messagesReceived.sumThenReset();
         stats.bytesReceived = bytesReceived.sumThenReset();
 
         stats.totalMessagesSent = totalMessagesSent.sum();
-        stats.totalMessageSendErrors = totalMessageSendErrors.sum();
+        stats.totalErrors = totalMessageSendErrors.sum();
         stats.totalMessagesReceived = totalMessagesReceived.sum();
 
         stats.publishLatency = publishLatencyRecorder.getIntervalHistogram();
@@ -130,7 +130,6 @@ public class WorkerStats {
     public CountersStats toCountersStats() throws IOException {
         CountersStats stats = new CountersStats();
         stats.messagesSent = totalMessagesSent.sum();
-        stats.messageSendErrors = totalMessageSendErrors.sum();
         stats.messagesReceived = totalMessagesReceived.sum();
         return stats;
     }

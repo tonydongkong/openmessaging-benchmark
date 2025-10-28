@@ -248,6 +248,16 @@ public class LocalWorker implements Worker, ConsumerCallback {
         internalMessageReceived(data.remaining(), publishTimestamp);
     }
 
+    @Override
+    public void messageReceived(int payloadSize, long e2eLatencyNs) {
+        stats.recordMessageReceived(payloadSize, TimeUnit.NANOSECONDS.toMicros(e2eLatencyNs));
+    }
+
+    @Override
+    public void error() {
+        stats.recordProducerFailure();
+    }
+
     public void internalMessageReceived(int size, long publishTimestamp) {
         long now = System.currentTimeMillis();
         long endToEndLatencyMicros = TimeUnit.MILLISECONDS.toMicros(now - publishTimestamp);
