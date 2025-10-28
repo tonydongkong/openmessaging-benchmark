@@ -43,6 +43,7 @@
             <classifier>bin</classifier>
             <type>tar.gz</type>
             <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -86,7 +87,7 @@
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
-                        <phase>generate-resources</phase>
+                        <phase>prepare-package</phase>
                         <configuration>
                             <outputDirectory>${project.build.directory}/</outputDirectory>
                             <includeArtifactIds>package</includeArtifactIds>
